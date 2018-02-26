@@ -61,7 +61,6 @@
 - (void)dealloc{
     [self.timer invalidate];
     _timer = nil;
-    NSLog(@"[\n======%@销毁了=====\n]",[self class]);
 }
 
 
@@ -103,12 +102,13 @@
     return self;
 }
 
+/*  返回方法签名 */
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)sel
 {
-
     return [_trueTarget methodSignatureForSelector:sel];
 }
 
+/* 设置消息接收对象 */
 - (void)forwardInvocation:(NSInvocation *)invocation {
     if (_trueTarget && [_trueTarget respondsToSelector:invocation.selector]) {
         [invocation setTarget:_trueTarget];

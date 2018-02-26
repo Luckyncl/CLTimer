@@ -8,6 +8,7 @@
 
 #import "SecondController.h"
 #import "CLTimer.h"
+
 @interface SecondController ()
 
 @property (nonatomic, strong) CLTimer *timer;
@@ -22,10 +23,12 @@
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor yellowColor];
 
-    self.timer = [CLTimer timerWithTimeInterval:1.f userInfo:nil repeats:YES timerBlock:^(NSTimer *timer) {
-        NSLog(@"定时器----");
+    __weak typeof(self) weakSelf = self;
+    self.timer = [CLTimer timerWithTimeInterval:10.f userInfo:nil repeats:YES timerBlock:^(NSTimer *timer) {
+        NSLog(@"[========%@======]",weakSelf);
     }];
     [self.timer startTimer];
+
 }
 
 - (void)didReceiveMemoryWarning {
@@ -40,14 +43,6 @@
 }
 
 
-/*
-#pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end
