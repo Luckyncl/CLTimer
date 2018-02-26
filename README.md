@@ -1,0 +1,2 @@
+# CLTimer
+一个解决定时器强引用self的解决方案，对NSTimer封装后的CLTimer不需要去特意关心NSTimer的释放问题
