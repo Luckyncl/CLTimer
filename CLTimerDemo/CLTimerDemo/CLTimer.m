@@ -7,7 +7,8 @@
 //
 
 #import "CLTimer.h"
-
+#import <AVFoundation/AVFoundation.h>
+#import <UIKit/UIKit.h>
 
 @interface CLTimerTarget : NSProxy
 @property (nonatomic, weak)id trueTarget;
@@ -15,14 +16,15 @@
 
 @end
 
-
-
 @interface CLTimer ()
 
 @property (nonatomic, strong) NSTimer *timer;
 
 @property (nonatomic, copy)CLTimerBlock timerBlock;
 
+@property (nonatomic, strong) CADisplayLink *timeLink;
+
+@property (nonatomic, copy)void(^displayBlock)(void);
 
 @end
 
@@ -36,6 +38,28 @@
 
 
 
++ (instancetype)displayLinkWithDisplayBlock:(void(^)(void))displayBlock
+{
+    return [[self alloc] initWithDisplayBlock:displayBlock];
+}
+
+
+- (instancetype)initWithDisplayBlock:(void(^)(void))displayBlock
+{
+    self = [super init];
+    if (self) {
+        CADisplayLink *timeLink = [CADisplayLink displayLinkWithTarget:[[CLTimerTarget alloc] initWithTarget:self] selector:@selector(timerAction:)];
+        self.timeLink = timeLink;
+        self.timeLink.paused = YES;
+        [self.timeLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+
+        [self setDisplayBlock:displayBlock];
+    }
+    return self;
+}
+
+
+
 - (instancetype)initWithTimeInterval:(NSTimeInterval)ti  userInfo:( id)userInfo repeats:(BOOL)yesOrNo timerBlock:(void(^)(NSTimer *timer))timerBlock
 {
     self = [super init];
@@ -44,6 +68,7 @@
         [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
         [self setTimerBlock:timerBlock];
         [self stopTimer];
+
     }
     return self;
 }
@@ -54,21 +79,35 @@
     if (self.timerBlock) {
         self.timerBlock(timer);
     }
+
+    if (self.displayBlock) {
+        self.displayBlock();
+    }
 }
 
 
 
 - (void)dealloc{
-    [self.timer invalidate];
-    _timer = nil;
+    if (self.timer) {
+        [self.timer invalidate];
+        _timer = nil;
+    }
+
+    if (self.timeLink) {
+        [self.timeLink invalidate];
+        self.timeLink = nil;
+    }
 }
 
 
 
-- (void)startTimerWithFutureTime:(NSTimeInterval)ti
+- (void)startTimerWithDelayTime:(NSTimeInterval)ti;
 {
     if (self.timer) {
         [self.timer setFireDate:[NSDate dateWithTimeIntervalSinceNow:ti]];
+    }
+    if (self.timeLink) {
+        [self startTimer];
     }
 }
 
@@ -78,21 +117,22 @@
     if (self.timer) {
         [self.timer setFireDate:[NSDate distantPast]];
     }
+    if (self.timeLink) {
+        self.timeLink.paused = NO;
+    }
 }
-
-
 
 - (void)stopTimer
 {
     if (self.timer) {
         [self.timer setFireDate:[NSDate distantFuture]];
     }
+    if (self.timeLink) {
+        self.timeLink.paused = YES;
+    }
 }
 
-
 @end
-
-
 
 @implementation CLTimerTarget
 

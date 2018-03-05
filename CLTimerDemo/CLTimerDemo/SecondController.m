@@ -13,6 +13,7 @@
 
 @property (nonatomic, strong) CLTimer *timer;
 
+@property (nonatomic, strong) CLTimer *displayTimer;
 
 @end
 
@@ -28,6 +29,16 @@
         NSLog(@"[========%@======]",weakSelf);
     }];
     [self.timer startTimer];
+
+
+
+    self.displayTimer = [CLTimer displayLinkWithDisplayBlock:^{
+        NSLog(@"ssdfdfdeeererere");
+    }];
+
+    [self.displayTimer startTimer];
+
+
 
 }
 
